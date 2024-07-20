@@ -1,4 +1,9 @@
-require("dotenv").config();
+const path = require("path");
+let env_path = path.join(__dirname, "../.env.development");
+if (process.env.APP_ENV) {
+  env_path = path.join(__dirname, `../.env.${process.env.APP_ENV}`);
+}
+require("dotenv").config({ path: env_path });
 const startApp = require("./boot/setup").startApp;
 
 (() => {

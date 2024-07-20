@@ -23,7 +23,7 @@ const ratingRoutes = require("../routes/rating.routes");
 const commentsRoutes = require("../routes/comments.routes");
 
 try {
-  mongoose.connect("mongodb://localhost:27017/epita");
+  mongoose.connect(process.env.MONGO_URI || "mongodb+srv://myAtlasDBUser:Da7cxuCdShecHWmk@myatlasclusteredu.5nzxbzz.mongodb.net/software-integration-dev");
   logger.info("MongoDB Connected");
 } catch (error) {
   logger.error("Error connecting to DB" + error);
