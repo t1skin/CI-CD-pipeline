@@ -7,4 +7,4 @@ router.get('/', movieServices.getMovies);
 router.get('/top', movieServices.getTopRatedMovies);
 router.get('/me', movieServices.getSeenMovies);
 
-module.exports = router;
+export default router;
