@@ -5,4 +5,4 @@ const router: Router = express.Router();
 
 router.post('/:movieId', ratingService.addRating);
 
-module.exports = router;
+export default router;
