@@ -1,9 +1,14 @@
-const pool = require('../boot/database/db_connect');
-const logger = require('../middleware/winston');
-const statusCodes = require('../constants/statusCodes');
-const ratingModel = require('../models/ratingModel');
+import pool from '../boot/database/db_connect';
+import logger from '../middleware/winston';
+import statusCodes from '../constants/statusCodes';
+import ratingModel from '../models/ratingModel';
+import { Response } from 'express';
+import { IRequestWithUser } from '../interfaces/requestWithUser.interface';
 
-const addRating = async (req, res) => {
+const addRating = async (
+  req: IRequestWithUser,
+  res: Response,
+): Promise<void> => {
   const { movieId } = req.params;
   const { rating } = req.body;
 
@@ -43,6 +48,4 @@ const addRating = async (req, res) => {
   }
 };
 
-module.exports = {
-  addRating,
-};
+export { addRating };

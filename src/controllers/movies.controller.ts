@@ -90,8 +90,4 @@ const getSeenMovies = async (
   }
 };
 
-module.exports = {
-  getMovies,
-  getTopRatedMovies,
-  getSeenMovies,
-};
+export { getMovies, getTopRatedMovies, getSeenMovies };
