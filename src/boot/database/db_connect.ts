@@ -13,7 +13,9 @@ try {
 
 const db_config: PoolConfig = {
   user: process.env.DB_USER || 'postgres',
-  host: process.env.DB_HOST || 'perceptively-smiling-woodlouse.data-1.use1.tembo.io',
+  host:
+    process.env.DB_HOST ||
+    'perceptively-smiling-woodlouse.data-1.use1.tembo.io',
   database: process.env.DB_NAME || 'postgres',
   password: process.env.DB_PASSWORD || 'Y7W5NDCAsVc7x8xL',
   port: 5432,
