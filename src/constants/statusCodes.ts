@@ -6,7 +6,7 @@ const unauthorized = 401;
 const badRequest = 400;
 const userAlreadyExists = 409;
 
-module.exports = {
+export {
   queryError,
   notFound,
   badGateway,
