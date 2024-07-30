@@ -1,5 +1,5 @@
 import logger from '../middleware/winston';
-import statusCodes from '../constants/statusCodes';
+import * as statusCodes from '../constants/statusCodes';
 import CommentModel, { ICommentDocument } from '../models/commentModel';
 import { Request, Response } from 'express';
 
