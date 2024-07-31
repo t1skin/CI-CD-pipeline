@@ -3,8 +3,10 @@ import userModel from '../models/userModel';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
+import { Session, SessionData } from 'express-session';
+
 interface CustomRequest extends Request {
-  session: { user?: { _id: string } };
+  session: Session & Partial<SessionData> & { user?: { _id: string } };
 }
 
 const signup = async (req: Request, res: Response): Promise<Response> => {

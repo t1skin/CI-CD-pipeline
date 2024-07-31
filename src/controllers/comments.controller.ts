@@ -1,5 +1,5 @@
 import logger from '../middleware/winston';
-import * as statusCodes from '../constants/statusCodes';
+import statusCodes from '../constants/statusCodes';
 import CommentModel, { ICommentDocument } from '../models/commentModel';
 import { Request, Response } from 'express';
 
@@ -9,8 +9,17 @@ const addComment = async (req: Request, res: Response): Promise<Response> => {
 
   const movieId: number = parseInt(movie_id);
 
-  if (!movie_id || isNaN(movieId) || !rating || !username || !comment || !title) {
-    return res.status(statusCodes.badRequest).json({ message: 'Missing parameters' });
+  if (
+    !movie_id ||
+    isNaN(movieId) ||
+    !rating ||
+    !username ||
+    !comment ||
+    !title
+  ) {
+    return res
+      .status(statusCodes.badRequest)
+      .json({ message: 'Missing parameters' });
   } else {
     try {
       const commentObj: ICommentDocument = new CommentModel({
@@ -33,16 +42,23 @@ const addComment = async (req: Request, res: Response): Promise<Response> => {
   }
 };
 
-const getCommentsById = async (req: Request, res: Response): Promise<Response> => {
+const getCommentsById = async (
+  req: Request,
+  res: Response,
+): Promise<Response> => {
   const { movie_id } = req.params;
 
   const movieId: number = parseInt(movie_id);
 
   if (!movie_id || isNaN(movieId)) {
-    return res.status(statusCodes.badRequest).json({ message: 'movie id missing' });
+    return res
+      .status(statusCodes.badRequest)
+      .json({ message: 'movie id missing' });
   } else {
     try {
-      const comments: ICommentDocument[] = await CommentModel.find({ movie_id: movieId });
+      const comments: ICommentDocument[] = await CommentModel.find({
+        movie_id: movieId,
+      });
       return res.status(statusCodes.success).json({ comments });
     } catch (error) {
       logger.error(error.stack);
@@ -53,7 +69,4 @@ const getCommentsById = async (req: Request, res: Response): Promise<Response> =
   }
 };
 
-export {
-  addComment,
-  getCommentsById,
-};
+export { addComment, getCommentsById };

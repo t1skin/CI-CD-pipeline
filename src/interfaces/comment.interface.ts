@@ -1,11 +1,10 @@
 export interface IComment {
-    movie_id: number;
-    username: string;
-    comment: string;
-    title: string;
-    rating: number;
-    downvotes?: number;
-    upvotes?: number;
-    created_at?: Date;
-  }
-  
+  movie_id: number;
+  username: string;
+  comment: string;
+  title: string;
+  rating: number;
+  downvotes?: number;
+  upvotes?: number;
+  created_at?: Date;
+}

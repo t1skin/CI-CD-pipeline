@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { unauthorized } from '../constants/statusCodes';
+import statusCodes from '../constants/statusCodes';
+const { unauthorized } = statusCodes;
 import logger from './winston';
 
 interface CustomRequest extends Request {

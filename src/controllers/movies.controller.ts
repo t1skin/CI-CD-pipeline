@@ -56,7 +56,7 @@ const getMoviesByCategory = async (category: string): Promise<IMovie[]> => {
 };
 
 const getTopRatedMovies = async (
-  req: Request,
+  _req: Request,
   res: Response,
 ): Promise<void> => {
   try {

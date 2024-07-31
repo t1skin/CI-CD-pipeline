@@ -1,17 +1,23 @@
 import { Request, Response, NextFunction } from 'express';
 import logger from './winston';
-import { badRequest } from '../constants/statusCodes';
+import statusCodes from '../constants/statusCodes';
+const { badRequest } = statusCodes;
 
-const validator = (req: Request, res: Response, next: NextFunction): Response | void => {
+const validator = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Response | void => {
   // No creation date is allowed to pass through
   req.body.creation_date && delete req.body.creation_date;
 
-  let creationDate = new Date().toJSON().slice(0, 10);
+  const creationDate = new Date().toJSON().slice(0, 10);
   req.body.creation_date = creationDate;
 
   try {
-    for (let [key, value] of Object.entries(req.body)) {
-      if (value === "") {
+    for (const [key, originalValue] of Object.entries(req.body)) {
+      let value = originalValue;
+      if (value === '') {
         value = null;
         req.body[key] = value;
         continue;
@@ -21,8 +27,8 @@ const validator = (req: Request, res: Response, next: NextFunction): Response | 
     next();
   } catch (error) {
     logger.error(error);
-    res.status(badRequest).json({ error: "Bad request" });
+    res.status(badRequest).json({ error: 'Bad request' });
   }
 };
 
-module.exports = validator;
+export default validator;

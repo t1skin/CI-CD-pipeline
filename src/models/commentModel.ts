@@ -42,7 +42,7 @@ const commentSchema = new Schema<ICommentDocument>(
     timestamps: {
       createdAt: 'created_at',
     },
-  }
+  },
 );
 
 const CommentModel = model<ICommentDocument>('Comment', commentSchema);

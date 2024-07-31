@@ -7,7 +7,7 @@ import helmet from 'helmet';
 import mongoose from 'mongoose';
 import session from 'express-session';
 import morgan from 'morgan';
-import logger from '../middleware/winston';
+import logger, { LoggerStream } from '../middleware/winston';
 import notFound from '../middleware/notFound';
 import healthCheck from '../middleware/healthCheck';
 import verifyToken from '../middleware/authentication';
@@ -48,7 +48,7 @@ const registerCoreMiddleWare = (): void => {
       }),
     );
 
-    app.use(morgan('combined', { stream: logger.stream }));
+    app.use(morgan('combined', { stream: new LoggerStream() }));
     app.use(express.json()); // returning middleware that only parses Json
     app.use(cors({})); // enabling CORS
     app.use(helmet()); // enabling helmet -> setting response headers

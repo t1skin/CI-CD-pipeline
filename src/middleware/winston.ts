@@ -1,58 +1,36 @@
-import * as winston from 'winston';
+import { createLogger, format, transports, Logger } from 'winston';
 
-interface Options {
-  file: {
-    level: string;
-    filename: string;
-    handleExceptions: boolean;
-    maxsize: number;
-    maxFiles: number;
-    format: winston.Logform.Format;
-  };
-  console: {
-    level: string;
-    handleExceptions: boolean;
-    format: winston.Logform.Format;
-  };
-}
-
-const options: Options = {
+// Define the custom settings for each transport
+const options = {
   file: {
     level: 'info',
-    filename: `./logs/app.log`,
+    filename: './logs/app.log',
     handleExceptions: true,
     maxsize: 5242880, // about 5MB
     maxFiles: 5,
-    format: winston.format.combine(
-      winston.format.timestamp(),
-      winston.format.json(),
-    ),
+    format: format.combine(format.timestamp(), format.json()),
   },
   console: {
     level: 'debug',
     handleExceptions: true,
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.simple(),
-    ),
+    format: format.combine(format.colorize(), format.simple()),
   },
 };
 
-const baseLogger: winston.Logger = winston.createLogger({
+// Instantiate a new Winston Logger with the options defined above
+const logger: Logger = createLogger({
   transports: [
-    new winston.transports.File(options.file),
-    new winston.transports.Console(options.console),
+    new transports.File(options.file),
+    new transports.Console(options.console),
   ],
   exitOnError: false,
 });
 
-const logger = {
-  ...baseLogger,
-  stream: {
-    write: (message: string): void => {
-      baseLogger.info(message.trim());
-    },
-  },
-};
+// Create a stream object with a 'write' function
+export class LoggerStream {
+  write(message: string): void {
+    logger.info(message.substring(0, message.lastIndexOf('\n')));
+  }
+}
 
 export default logger;
