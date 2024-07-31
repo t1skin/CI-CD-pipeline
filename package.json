@@ -9,10 +9,10 @@
     "start:release": "cross-env APP_ENV=release node src/index.ts",
     "start:preprod": "cross-env APP_ENV=preproduction node src/index.ts",
     "start": "cross-env APP_ENV=production node src/index.ts",
-    "lint": "eslint . --ext .ts  --no-error-on-unmatched-pattern",
-    "lint:fix": "eslint . --ext .ts --fix --no-error-on-unmatched-pattern",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts",
     "test": "echo 'running tests'",
-    "build": "echo 'building app'"
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
