@@ -1,8 +1,8 @@
 import pool from '../boot/database/db_connect';
 import logger from '../middleware/winston';
 import statusCodes from '../constants/statusCodes';
-import { IMovie } from 'src/interfaces/movie.interface';
-import { IRequestWithUser } from 'src/interfaces/requestWithUser.interface';
+import { IMovie } from '../interfaces/movie.interface';
+import { IRequestWithUser } from '../interfaces/requestWithUser.interface';
 import { Request, Response } from 'express';
 
 const getMovies = async (req: Request, res: Response): Promise<Response> => {
@@ -36,7 +36,7 @@ const getMovies = async (req: Request, res: Response): Promise<Response> => {
       return res.status(statusCodes.success).json({ movies: groupedMovies });
     } catch (error) {
       logger.error(error.stack);
-      res
+      return res
         .status(statusCodes.queryError)
         .json({ error: 'Exception occured while fetching movies' });
     }
