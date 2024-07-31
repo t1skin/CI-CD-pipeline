@@ -78,7 +78,7 @@ const getSeenMovies = async (
 ): Promise<void> => {
   try {
     const movies = await pool.query(
-      'SELECT * FROM seen_movies S JOIN movies M ON S.movie_id = M.movie_id WHERE email = $1;',
+      'SELECT * FROM seen_movies S JOIN movies M ON S.movie_id = M.movie_id WHERE user_email = $1;',
       [req.user.email],
     );
     res.status(statusCodes.success).json({ movies: movies.rows });

@@ -234,7 +234,7 @@ describe('Movies Controller', () => {
       await getSeenMovies(req as IRequestWithUser, res as Response);
 
       expect(pool.query).toHaveBeenCalledWith(
-        'SELECT * FROM seen_movies S JOIN movies M ON S.movie_id = M.movie_id WHERE email = $1;',
+        'SELECT * FROM seen_movies S JOIN movies M ON S.movie_id = M.movie_id WHERE user_email = $1;',
         ['test@mail.com'],
       );
       expect(statusMock).toHaveBeenCalledWith(statusCodes.success);
