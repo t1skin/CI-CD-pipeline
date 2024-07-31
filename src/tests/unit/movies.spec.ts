@@ -12,6 +12,9 @@ import { IRequestWithUser } from '../../interfaces/requestWithUser.interface';
 
 jest.mock('../../boot/database/db_connect');
 jest.mock('../../middleware/winston');
+afterAll(async () => {
+  await pool.end();
+});
 describe('Movies Controller', () => {
   describe('getMovies', () => {
     let req: Partial<Request>;
