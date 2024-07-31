@@ -10,11 +10,17 @@ import statusCodes from '../../constants/statusCodes';
 import { IMovie } from '../../interfaces/movie.interface';
 import { IRequestWithUser } from '../../interfaces/requestWithUser.interface';
 
-jest.mock('../../boot/database/db_connect');
+jest.mock('../../boot/database/db_connect', () => ({
+  query: jest.fn(),
+  end: jest.fn(),
+}));
 jest.mock('../../middleware/winston');
+
 afterAll(async () => {
+  jest.clearAllMocks();
   await pool.end();
 });
+
 describe('Movies Controller', () => {
   describe('getMovies', () => {
     let req: Partial<Request>;

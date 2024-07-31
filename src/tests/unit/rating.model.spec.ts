@@ -1,4 +1,5 @@
 import Rating from '../../models/ratingModel';
+
 describe('Rating Model', () => {
   it('should create a new rating', async () => {
     const rating = new Rating({
@@ -15,10 +16,12 @@ describe('Rating Model', () => {
 
   it('should throw an error if required fields are missing', async () => {
     const rating = new Rating();
-    rating.validate().catch((err) => {
+    try {
+      await rating.validate();
+    } catch (err) {
       expect(err.errors.movie_id).toBeDefined();
       expect(err.errors.email).toBeDefined();
       expect(err.errors.rating).toBeDefined();
-    });
+    }
   });
 });

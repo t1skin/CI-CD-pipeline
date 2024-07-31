@@ -5,7 +5,14 @@ import { IRequestWithUser } from '../../interfaces/requestWithUser.interface';
 import pool from '../../boot/database/db_connect';
 
 jest.mock('../../models/ratingModel');
-jest.mock('../../boot/database/db_connect');
+jest.mock('../../boot/database/db_connect', () => ({
+  query: jest.fn(),
+  end: jest.fn(),
+}));
+afterAll(async () => {
+  jest.clearAllMocks();
+  await pool.end();
+});
 
 describe('Rating Controller', () => {
   describe('addRating', () => {
@@ -71,9 +78,7 @@ describe('Rating Controller', () => {
         params: { movieId: '1' },
         user: { id: 1, email: 'test@mail.com' },
       };
-      (ratingModel as unknown as jest.Mock).mockImplementation(() => ({
-        save: jest.fn().mockRejectedValue(new Error('Test error')),
-      }));
+      jest.spyOn(ratingModel, 'find').mockRejectedValue(new Error('error'));
       await addRating(req as IRequestWithUser, res as Response);
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
