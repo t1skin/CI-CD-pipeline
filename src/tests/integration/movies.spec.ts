@@ -63,31 +63,74 @@ describe('Movies', () => {
       expect(response.body.movies).toBeInstanceOf(Array);
       expect(response.body.movies).toHaveLength(10);
     });
+
+    it('should update the top rated movies list if a new rating is added', async () => {
+      const response = await request
+        .get('/movies/top')
+        .set('Authorization', `Bearer ${token}`);
+      const topMovie = response.body.movies[0];
+      const ratingResponse = await request
+        .post(`/ratings/${topMovie.movie_id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ rating: 1 });
+      expect(ratingResponse.status).toBe(200);
+      const updatedResponse = await request
+        .get('/movies/top')
+        .set('Authorization', `Bearer ${token}`);
+      expect(updatedResponse.status).toBe(200);
+      expect(updatedResponse.body.movies).toHaveLength(10);
+      expect(updatedResponse.body.movies[0].rating).toBeGreaterThanOrEqual(
+        topMovie.rating,
+      );
+      if (updatedResponse.body.movies[0].movie_id === topMovie.movie_id) {
+        expect(updatedResponse.body.movies[0].rating).not.toEqual(
+          topMovie.rating,
+        );
+      }
+    });
   });
 
-  describe('GET /movies/me', () => {
-    it('should return 401 status code if no token is provided', async () => {
-      const response = await request.get('/movies/me');
-      expect(response.status).toBe(401);
-    });
+  it('should not update the top rated movies list if an invalid rating is submitted', async () => {
+    const response = await request
+      .get('/movies/top')
+      .set('Authorization', `Bearer ${token}`);
+    const lastMovie = response.body.movies[response.body.movies.length - 1];
+    const ratingResponse = await request
+      .post(`/ratings/${lastMovie.movie_id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ rating: 6 });
+    expect(ratingResponse.status).toBe(500);
+    const updatedResponse = await request
+      .get('/movies/top')
+      .set('Authorization', `Bearer ${token}`);
+    expect(updatedResponse.status).toBe(200);
+    expect(updatedResponse.body.movies).toHaveLength(10);
+    expect(updatedResponse.body.movies).toContainEqual(lastMovie);
+  });
+});
 
-    it('should return movies seen by the user', async () => {
-      const response = await request
-        .get('/movies/me')
-        .set('Authorization', `Bearer ${token}`);
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('movies');
-      expect(response.body.movies).toBeInstanceOf(Array);
-    });
+describe('GET /movies/me', () => {
+  it('should return 401 status code if no token is provided', async () => {
+    const response = await request.get('/movies/me');
+    expect(response.status).toBe(401);
+  });
 
-    it('should return empty list if user has not seen any movies', async () => {
-      const response = await request
-        .get('/movies/me')
-        .set('Authorization', `Bearer ${token}`);
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('movies');
-      expect(response.body.movies).toBeInstanceOf(Array);
-      expect(response.body.movies).toHaveLength(0);
-    });
+  it('should return movies seen by the user', async () => {
+    const response = await request
+      .get('/movies/me')
+      .set('Authorization', `Bearer ${token}`);
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('movies');
+    expect(response.body.movies).toBeInstanceOf(Array);
+  });
+
+  it('should return empty list if user has not seen any movies', async () => {
+    const response = await request
+      .get('/movies/me')
+      .set('Authorization', `Bearer ${token}`);
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('movies');
+    expect(response.body.movies).toBeInstanceOf(Array);
+    expect(response.body.movies).toHaveLength(0);
   });
 });

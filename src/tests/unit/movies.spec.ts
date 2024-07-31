@@ -175,7 +175,7 @@ describe('Movies Controller', () => {
       await getTopRatedMovies(req as Request, res as Response);
 
       expect(pool.query).toHaveBeenCalledWith(
-        'SELECT * FROM movies ORDER BY rating DESC LIMIT 10;',
+        'SELECT * FROM movies ORDER BY rating DESC NULLS LAST LIMIT 10;',
       );
       expect(statusMock).toHaveBeenCalledWith(statusCodes.success);
       expect(jsonMock).toHaveBeenCalledWith({ movies: mockMovies });

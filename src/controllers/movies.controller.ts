@@ -61,7 +61,7 @@ const getTopRatedMovies = async (
 ): Promise<void> => {
   try {
     const movies = await pool.query(
-      'SELECT * FROM movies ORDER BY rating DESC LIMIT 10;',
+      'SELECT * FROM movies ORDER BY rating DESC NULLS LAST LIMIT 10;',
     );
     res.status(statusCodes.success).json({ movies: movies.rows });
   } catch (error) {
