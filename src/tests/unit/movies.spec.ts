@@ -166,7 +166,7 @@ describe('Movies Controller', () => {
       await getTopRatedMovies(req as Request, res as Response);
 
       expect(pool.query).toHaveBeenCalledWith(
-        'SELECT * FROM movies ORDER BY rating DESC LIMIT 10;',
+        'SELECT * FROM movies ORDER BY rating DESC NULLS LAST LIMIT 10;',
       );
       expect(statusMock).toHaveBeenCalledWith(statusCodes.success);
       expect(jsonMock).toHaveBeenCalledWith({ movies: mockMovies });
@@ -225,7 +225,7 @@ describe('Movies Controller', () => {
       await getSeenMovies(req as IRequestWithUser, res as Response);
 
       expect(pool.query).toHaveBeenCalledWith(
-        'SELECT * FROM seen_movies S JOIN movies M ON S.movie_id = M.movie_id WHERE email = $1;',
+        'SELECT * FROM seen_movies S JOIN movies M ON S.movie_id = M.movie_id WHERE user_email = $1;',
         ['test@mail.com'],
       );
       expect(statusMock).toHaveBeenCalledWith(statusCodes.success);
