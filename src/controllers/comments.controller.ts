@@ -64,7 +64,7 @@ const getCommentsById = async (
       logger.error(error.stack);
       return res
         .status(statusCodes.queryError)
-        .json({ error: 'Exception occured while fetching comments' });
+        .json({ error: 'Exception occurred while fetching comments' });
     }
   }
 };
