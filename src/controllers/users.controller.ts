@@ -1,14 +1,9 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import statusCodes from '../constants/statusCodes';
 import logger from '../middleware/winston';
 import pool from '../boot/database/db_connect';
 import jwt from 'jsonwebtoken';
-
-import { Session, SessionData } from 'express-session';
-
-interface CustomRequest extends Request {
-  session: Session & Partial<SessionData> & { user?: { email: string } };
-}
+import { CustomRequest } from '../interfaces/requestWithSession.interface';
 
 const register = async (req: CustomRequest, res: Response): Promise<void> => {
   const { email, username, password } = req.body;
