@@ -1,4 +1,4 @@
-import { Pool, PoolClient, PoolConfig, types } from 'pg';
+import { Pool, PoolConfig, types } from 'pg';
 import fs from 'fs';
 import logger from '../../middleware/winston';
 
@@ -35,13 +35,12 @@ function startConnection(): void {
 
   db_connection = new Pool(db_config);
 
-  db_connection.connect((err: Error, client: PoolClient) => {
+  db_connection.connect((err: Error | null) => {
     if (!err) {
       logger.info('PostgreSQL Connected');
     } else {
       logger.error('PostgreSQL Connection Failed', err);
     }
-    client.release();
   });
 
   db_connection.on('error', (err: Error) => {
