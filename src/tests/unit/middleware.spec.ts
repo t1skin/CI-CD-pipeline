@@ -1,8 +1,16 @@
+
 import { NextFunction, Request, Response } from 'express';
 import notFound from '../../middleware/notFound';
 import logger, { LoggerStream } from '../../middleware/winston';
 import statusCodes from '../../constants/statusCodes';
 import validator from '../../middleware/validator';
+import verifyToken from '../../middleware/authentication';
+import { IRequestWithUser } from 'src/interfaces/requestWithUser.interface';
+import jwt from 'jsonwebtoken';
+
+jest.mock('jsonwebtoken', () => ({
+  verify: jest.fn(),
+}));
 
 describe('Middleware', () => {
   describe('notFound', () => {
@@ -118,4 +126,62 @@ describe('Middleware', () => {
       expect(res.json).toHaveBeenCalledWith({ error: 'Bad request' });
     });
   });
+  describe('verifyToken', () => {
+    let req: Partial<IRequestWithUser>;
+    let res: Partial<Response>;
+    let next: NextFunction;
+    let statusMock: jest.Mock;
+    let jsonMock: jest.Mock;
+
+    beforeEach(() => {
+      req = {
+        header: jest.fn(),
+      };
+      statusMock = jest.fn().mockReturnThis();
+      jsonMock = jest.fn();
+      res = {
+        status: statusMock,
+        json: jsonMock,
+      };
+      next = jest.fn();
+    });
+
+    it('should return 401 if no token is provided', () => {
+      (req.header as jest.Mock).mockReturnValue(null);
+
+      verifyToken(req as IRequestWithUser, res as Response, next);
+
+      expect(res.status).toHaveBeenCalledWith(statusCodes.unauthorized);
+      expect(res.json).toHaveBeenCalledWith({ error: 'Unauthorized' });
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('should call next if token is valid', () => {
+      const mockToken = 'Bearer valid.token.here';
+      const decoded = { user: { id: 'user_id' } };
+
+      (req.header as jest.Mock).mockReturnValue(mockToken);
+      (jwt.verify as jest.Mock).mockReturnValue(decoded);
+
+      verifyToken(req as Request, res as Response, next);
+
+      expect(req.user).toEqual(decoded.user);
+      expect(next).toHaveBeenCalled();
+    });
+
+    it('should return 401 if token is invalid', () => {
+      const mockToken = 'Bearer invalid.token.here';
+      const error = new Error('Invalid token');
+
+      (req.header as jest.Mock).mockReturnValue(mockToken);
+      (jwt.verify as jest.Mock).mockImplementation(() => {
+        throw error;
+      });
+
+      verifyToken(req as Request, res as Response, next);
+      expect(res.status).toHaveBeenCalledWith(statusCodes.unauthorized);
+      expect(res.json).toHaveBeenCalledWith({ error: 'Invalid token' });
+      expect(next).not.toHaveBeenCalled();
+    });
+  });
 });
