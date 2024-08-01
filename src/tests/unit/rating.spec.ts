@@ -3,7 +3,7 @@ import ratingModel from '../../models/ratingModel';
 import { addRating } from '../../controllers/rating.controller';
 import { IRequestWithUser } from '../../interfaces/requestWithUser.interface';
 import pool from '../../boot/database/db_connect';
-
+//
 jest.mock('../../models/ratingModel');
 jest.mock('../../boot/database/db_connect', () => ({
   query: jest.fn(),
