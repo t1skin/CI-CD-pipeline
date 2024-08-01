@@ -9,26 +9,40 @@ on:
       - preprod
 
 jobs:
-  build:
+  ci:
     runs-on: ubuntu-latest
-    
+    environment: development
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Run linter
-      run: npm run lint
-    
-    - name: Run tests
-      run: npm test
-    
-    - name: Build project
-      run: npm run build
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Setup test environment
+        run: |
+          touch .env.development
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env.development
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env.development
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env.development
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env.development
+          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env.development
+          echo "MONGO_URI=${{ secrets.MONGO_URI }}" >> .env.development
+          mkdir pg-certs
+          cd pg-certs
+          echo "${{ secrets.PG_CERT }}" > development.crt
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build project
+        run: npm run build
