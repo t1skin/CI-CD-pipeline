@@ -1,6 +1,11 @@
 import { Request, Response } from 'express';
 import userModel from '../../models/userModel';
-import { getUser, logout, signin, signup } from '../../controllers/auth.controller';
+import { 
+  getUser, 
+  logout, 
+  signin, 
+  signup 
+} from '../../controllers/auth.controller';
 import bcrypt from 'bcrypt';
 import { CustomRequest } from '../../interfaces/requestWithSession.interface';
 import jwt from 'jsonwebtoken';
