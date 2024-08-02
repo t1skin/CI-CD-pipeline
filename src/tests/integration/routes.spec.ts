@@ -243,6 +243,15 @@ describe('GET /movies/me', () => {
   });
 });
 
+describe('heathCheck', () => {
+  it('should return 200 status code', async () => {
+    const response = await request.get('/api/health');
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('message');
+    expect(response.body.message).toBe('All up and running !!');
+  });
+});
+
 describe('User and Profile', () => {
   let token: string;
   describe('POST /users/register', () => {
