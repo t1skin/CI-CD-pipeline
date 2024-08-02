@@ -2,13 +2,7 @@ import { Request, Response } from 'express';
 import userModel from '../models/userModel';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-
-import { Session, SessionData } from 'express-session';
-
-interface CustomRequest extends Request {
-  session: Session & Partial<SessionData> & { user?: { _id: string } };
-}
-
+import { CustomRequest } from '../interfaces/requestWithSession.interface';
 const signup = async (req: Request, res: Response): Promise<Response> => {
   const { username, email, password } = req.body;
 
@@ -60,7 +54,6 @@ const signin = async (req: CustomRequest, res: Response): Promise<Response> => {
         expiresIn: '1h',
       },
     );
-
     return res.status(200).json({ token });
   } catch (error) {
     // eslint-disable-next-line no-console

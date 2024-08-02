@@ -1,10 +1,14 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} **/
 module.exports = {
   testEnvironment: "node",
+  testPathIgnorePatterns: ['/node_modules/', '/dist/'],
+  preset: 'ts-jest',
   transform: {
-    "^.+.tsx?$": ["ts-jest",{}],
+    '^.+\\.tsx?$': 'ts-jest',
+    '^.+\\.jsx?$': 'babel-jest',
   },
-  testMatch: ["<rootDir>/src/**/*.spec.ts"],
-  testPathIgnorePatterns: ["<rootDir>/dist/"],
-  
+  transformIgnorePatterns: [
+    '/node_modules/(?!chai/)',
+  ],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
 };

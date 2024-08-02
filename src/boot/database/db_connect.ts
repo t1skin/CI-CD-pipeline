@@ -35,7 +35,7 @@ function startConnection(): void {
 
   db_connection = new Pool(db_config);
 
-  db_connection.connect((err: Error, client: PoolClient) => {
+  db_connection.connect((err: Error | null, client: PoolClient) => {
     if (!err) {
       logger.info('PostgreSQL Connected');
     } else {
@@ -50,6 +50,15 @@ function startConnection(): void {
   });
 }
 
+const closePool = async (): Promise<void> => {
+  if (db_connection) {
+    await db_connection.end();
+    db_connection = undefined;
+    logger.info('Database pool closed');
+  }
+};
+
 startConnection();
 
 export default db_connection;
+export { closePool };
