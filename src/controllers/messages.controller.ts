@@ -35,11 +35,15 @@ const addMessage = async (
   const { message } = req.body;
 
   if (!message || !message.name) {
-    return res.status(400).json({ error: 'missing information' });
+    return res
+      .status(statusCodes.badRequest)
+      .json({ error: 'missing information' });
   }
 
   if (!req.user) {
-    return res.status(500).json({ error: 'You are not authenticated' });
+    return res
+      .status(statusCodes.unauthorized)
+      .json({ error: 'You are not authenticated' });
   }
 
   message.user = req.user.id;

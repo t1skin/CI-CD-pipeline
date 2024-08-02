@@ -173,6 +173,21 @@ describe('Messages Controller', () => {
       expect(statusMock).toHaveBeenCalledWith(statusCodes.success);
     });
 
+    it('should fail if user is not authenticated', async () => {
+      req = {
+        body: {
+          message: { name: 'test-msg' },
+        },
+      };
+
+      await addMessage(req as IRequestWithUser, res as Response);
+
+      expect(statusMock).toHaveBeenCalledWith(statusCodes.unauthorized);
+      expect(jsonMock).toHaveBeenCalledWith({
+        error: 'You are not authenticated',
+      });
+    });
+
     it('should fail if info is missing', async () => {
       req = {
         body: {},
