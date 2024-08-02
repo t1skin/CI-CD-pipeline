@@ -93,6 +93,11 @@ jobs:
     - name: Build project
       run: npm run build
 
+    - name: Copy cert files
+      run: |
+            mkdir -p dist/pg-certs
+            cp -r ./pg-certs/* ./dist/pg-certs/
+
   deploy-preproduction:
     runs-on: [self-hosted, preproduction]
     if: github.ref == 'refs/heads/preprod'
