@@ -9,9 +9,47 @@ on:
       - preprod
 
 jobs:
+
+  run-tests:
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Setup test environment
+        run: |
+          touch .env
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
+          echo "MONGO_URI=${{ secrets.MONGO_URI }}" >> .env
+          echo "CERT_NAME=release" >> .env
+          mkdir pg-certs
+          cd pg-certs
+          echo "${{ secrets.PG_CERT }}" > release.crt
+
+      - name: Run tests
+        run: npm test
+
+
   deploy-production:
     runs-on: [self-hosted, production]
     if: github.ref == 'refs/heads/main'
+    needs: run-tests
     environment: production
 
     strategy:
@@ -52,15 +90,13 @@ jobs:
         cd pg-certs
         echo "${{ secrets.PG_CERT }}" > ${{ env.ENVIRONMENT }}.crt
 
-    - name: Run tests
-      run: npm test
-
     - name: Build project
       run: npm run build
 
   deploy-preproduction:
     runs-on: [self-hosted, preproduction]
     if: github.ref == 'refs/heads/preprod'
+    needs: run-tests
     environment: preproduction
 
     strategy:
@@ -101,15 +137,13 @@ jobs:
         cd pg-certs
         echo "${{ secrets.PG_CERT }}" > ${{ env.ENVIRONMENT }}.crt
 
-    - name: Run tests
-      run: npm test
-
     - name: Build project
       run: npm run build
 
   deploy-release:
     runs-on: [self-hosted, release]
     if: github.ref == 'refs/heads/release'
+    needs: run-tests
     environment: release
 
     strategy:
@@ -150,15 +184,13 @@ jobs:
         cd pg-certs
         echo "${{ secrets.PG_CERT }}" > ${{ env.ENVIRONMENT }}.crt
 
-    - name: Run tests
-      run: npm test
-
     - name: Build project
       run: npm run build
 
   deploy-development:
     runs-on: [self-hosted, development]
     if: github.ref == 'refs/heads/dev'
+    needs: run-tests
     environment: development
 
     strategy:
@@ -182,9 +214,6 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: Run linter
-      run: npm run lint
-
     - name: Setup environment
       run: |
         touch .env
@@ -198,9 +227,6 @@ jobs:
         mkdir pg-certs
         cd pg-certs
         echo "${{ secrets.PG_CERT }}" > ${{ env.ENVIRONMENT }}.crt
-
-    - name: Run tests
-      run: npm test
 
     - name: Build project
       run: npm run build
