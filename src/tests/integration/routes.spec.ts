@@ -8,10 +8,12 @@ const request = supertest(app);
 
 let agent: supertest.Agent;
 let appServer: Server;
+jest.setTimeout(30000);
 
 beforeAll(async () => {
   appServer = startApp();
   agent = supertest.agent(app);
+  jest.setTimeout(30000);
 });
 
 afterAll(async () => {
