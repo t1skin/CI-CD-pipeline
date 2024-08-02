@@ -1,17 +1,125 @@
 import supertest from 'supertest';
-import startApp from '../../boot/setup';
+import { v4 as uuidv4 } from 'uuid';
+import startApp, { app } from '../../boot/setup';
+import { Server } from 'http';
+import { closePool } from '../../boot/database/db_connect';
+import logger from '../../middleware/winston';
+const request = supertest(app);
 
-startApp();
-const request = supertest('http://localhost:8080');
-let token: string;
+let agent: supertest.Agent;
+let appServer: Server;
+
 beforeAll(async () => {
-  const response = await request.post('/auth/login').send({
-    email: 'test@mail.com',
-    password: 'password',
-  });
-  token = response.body.token;
+  appServer = startApp();
+  agent = supertest.agent(app);
 });
+
+afterAll(async () => {
+  return new Promise<void>((resolve) => {
+    appServer.close(async (err: Error | null) => {
+      if (err) {
+        logger.error('Error closing server:', err);
+      } else {
+        logger.info('Server closed successfully');
+      }
+
+      try {
+        await closePool();
+      } catch (dbError) {
+        logger.error('Error closing database pool:', dbError);
+      }
+      resolve();
+    });
+  });
+});
+
+let token: string;
+let uniqueEmail: string;
+
+describe('Auth', () => {
+  beforeAll(async () => {
+    uniqueEmail = `${uuidv4()}@mail.com`;
+
+    // Sign up a test user for login tests
+    await request.post('/auth/signup').send({
+      username: 'testuser',
+      email: uniqueEmail,
+      password: 'password',
+    });
+
+    // Log in to get a token for further tests
+    const response = await agent.post('/auth/login').send({
+      email: uniqueEmail,
+      password: 'password',
+    });
+    token = response.body.token;
+  });
+  describe('POST /auth/signup', () => {
+    it('should signup a new user and return 200 status code', async () => {
+      const uniqueEmail = `${uuidv4()}@mail.com`;
+
+      const response = await agent.post('/auth/signup').send({
+        username: 'newuser',
+        email: uniqueEmail,
+        password: 'newpassword',
+      });
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('email', uniqueEmail);
+    });
+
+    it('should return 500 status code if email is already taken', async () => {
+      const reusedEmail = `${uuidv4()}@mail.com`;
+
+      // First signup attempt
+      await agent.post('/auth/signup').send({
+        username: 'newuser',
+        email: reusedEmail,
+        password: 'newpassword',
+      });
+
+      // Second signup attempt with the same email
+      const response = await agent.post('/auth/signup').send({
+        username: 'newuser2',
+        email: reusedEmail,
+        password: 'newpassword',
+      });
+      expect(response.status).toBe(500);
+    });
+  });
+
+  describe('GET /auth/me', () => {
+    it('should return user info if user is logged in', async () => {
+      const response = await agent
+        .get('/auth/me')
+        .set('Authorization', `Bearer ${token}`);
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('email', uniqueEmail);
+    });
+  });
+
+  describe('GET /auth/logout', () => {
+    it('should logout user and invalidate the token', async () => {
+      const response = await agent
+        .get('/auth/logout')
+        .set('Authorization', `Bearer ${token}`);
+      expect(response.status).toBe(200);
+
+      const responseAfterLogout = await agent
+        .get('/auth/me')
+        .set('Authorization', `Bearer ${token}`);
+      expect(responseAfterLogout.status).toBe(500);
+    });
+  });
+});
+
 describe('Movies', () => {
+  beforeAll(async () => {
+    const response = await request.post('/auth/login').send({
+      email: 'test@mail.com',
+      password: 'password',
+    });
+    token = response.body.token;
+  });
   describe('GET /movies', () => {
     it('should return 401 status code if no token is provided', async () => {
       const response = await request.get('/movies');
