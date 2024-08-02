@@ -23,6 +23,6 @@ describe('User Model', () => {
     } catch (err) {
       expect(err.errors.email).toBeDefined();
       expect(err.errors.password).toBeDefined();
-    }
-  });
-})
+    }
+  });
+});
