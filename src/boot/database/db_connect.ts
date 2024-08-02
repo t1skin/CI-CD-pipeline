@@ -5,7 +5,7 @@ import logger from '../../middleware/winston';
 let pg_cert = '';
 try {
   pg_cert = fs
-    .readFileSync(`./pg-certs/${process.env.APP_ENV || 'development'}.crt`)
+    .readFileSync(`./pg-certs/${process.env.CERT_NAME || 'development'}.crt`)
     .toString();
 } catch (error) {
   logger.error('Error reading pg certificate file');
