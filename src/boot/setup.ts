@@ -1,14 +1,8 @@
 import express from 'express';
-import path from 'path';
 import { config } from 'dotenv';
 import { Server } from 'http';
 
-let env_path: string = path.join(__dirname, '../../.env.development');
-
-if (process.env.APP_ENV) {
-  env_path = path.join(__dirname, `../../.env.${process.env.APP_ENV}`);
-}
-config({ path: env_path });
+config();
 const PORT = process.env.PORT || 8080;
 const app = express();
 

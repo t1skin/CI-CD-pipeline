@@ -30,13 +30,14 @@ jobs:
 
       - name: Setup test environment
         run: |
-          touch .env.development
-          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env.development
-          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env.development
-          echo "DB_USER=${{ secrets.DB_USER }}" >> .env.development
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env.development
-          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env.development
-          echo "MONGO_URI=${{ secrets.MONGO_URI }}" >> .env.development
+          touch .env
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
+          echo "MONGO_URI=${{ secrets.MONGO_URI }}" >> .env
+          echo "CERT_NAME=development" >> .env
           mkdir pg-certs
           cd pg-certs
           echo "${{ secrets.PG_CERT }}" > development.crt
