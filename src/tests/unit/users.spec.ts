@@ -165,7 +165,7 @@ describe('Users Controller', () => {
         (pool.query as jest.Mock).mockImplementationOnce(
           (_query, _params, callback) => {
             callback(null, {
-              rows: [{ email: 'test@mail.com', username: 'test' }],
+              rows: [{ user_email: 'test@mail.com', username: 'test' }],
             });
           },
         );
