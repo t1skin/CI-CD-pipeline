@@ -6,9 +6,9 @@
   "scripts": {
     "prepare": "husky",
     "start:dev": "cross-env APP_ENV=development nodemon src/index.ts",
-    "start:release": "cross-env APP_ENV=release node src/index.ts",
-    "start:preprod": "cross-env APP_ENV=preproduction node src/index.ts",
-    "start": "cross-env APP_ENV=production node src/index.ts",
+    "start:release": "cross-env APP_ENV=release ts-node src/index.ts",
+    "start:preprod": "cross-env APP_ENV=preproduction ts-node src/index.ts",
+    "start": "cross-env APP_ENV=production ts-node src/index.ts",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "test": "jest",
