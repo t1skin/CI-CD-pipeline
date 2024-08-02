@@ -6,7 +6,7 @@ import {
   addComment,
   getCommentsById,
 } from '../../controllers/comments.controller';
-//
+
 jest.mock('../../middleware/winston');
 jest.mock('../../constants/statusCodes', () => ({
   badRequest: 400,
@@ -144,7 +144,7 @@ describe('Comment Controller', () => {
       expect(logger.error).toHaveBeenCalledWith(error.stack);
       expect(res.status).toHaveBeenCalledWith(statusCodes.queryError);
       expect(res.json).toHaveBeenCalledWith({
-        error: 'Exception occurred while fetching comments',
+        error: 'Exception occured while fetching comments',
       });
     });
   });

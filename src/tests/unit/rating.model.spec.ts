@@ -1,5 +1,4 @@
 import Rating from '../../models/ratingModel';
-
 describe('Rating Model', () => {
   it('should create a new rating', async () => {
     const rating = new Rating({
