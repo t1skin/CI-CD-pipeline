@@ -1,4 +1,3 @@
-
 import { NextFunction, Request, Response } from 'express';
 import notFound from '../../middleware/notFound';
 import logger, { LoggerStream } from '../../middleware/winston';
@@ -6,11 +5,17 @@ import statusCodes from '../../constants/statusCodes';
 import validator from '../../middleware/validator';
 import verifyToken from '../../middleware/authentication';
 import { IRequestWithUser } from 'src/interfaces/requestWithUser.interface';
+import router from '../../middleware/healthCheck';
+import express from 'express';
+import supertest from 'supertest';
 import jwt from 'jsonwebtoken';
 
 jest.mock('jsonwebtoken', () => ({
   verify: jest.fn(),
 }));
+
+const app = express();
+app.use(router);
 
 describe('Middleware', () => {
   describe('notFound', () => {
@@ -126,6 +131,7 @@ describe('Middleware', () => {
       expect(res.json).toHaveBeenCalledWith({ error: 'Bad request' });
     });
   });
+
   describe('verifyToken', () => {
     let req: Partial<IRequestWithUser>;
     let res: Partial<Response>;
@@ -163,7 +169,7 @@ describe('Middleware', () => {
       (req.header as jest.Mock).mockReturnValue(mockToken);
       (jwt.verify as jest.Mock).mockReturnValue(decoded);
 
-      verifyToken(req as Request, res as Response, next);
+      verifyToken(req as IRequestWithUser, res as Response, next);
 
       expect(req.user).toEqual(decoded.user);
       expect(next).toHaveBeenCalled();
@@ -179,9 +185,21 @@ describe('Middleware', () => {
       });
 
       verifyToken(req as Request, res as Response, next);
+
       expect(res.status).toHaveBeenCalledWith(statusCodes.unauthorized);
       expect(res.json).toHaveBeenCalledWith({ error: 'Invalid token' });
       expect(next).not.toHaveBeenCalled();
     });
-  });
+  });
+
+  describe('healthCheck', () => {
+    it('should return 200 status code and a success message', async () => {
+      const response = await supertest(app).get('/api/health');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        message: 'All up and running !!',
+      });
+    });
+  });
 });
