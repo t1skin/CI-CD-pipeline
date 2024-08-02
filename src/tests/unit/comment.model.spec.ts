@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { Error as MongooseError } from 'mongoose';
 import CommentModel from '../../models/commentModel';
 import { IComment } from '../../interfaces/comment.interface';
-
+//
 describe('Comment Model', () => {
   let sampleCommentVal: IComment;
 
