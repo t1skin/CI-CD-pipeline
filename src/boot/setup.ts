@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 import { config } from 'dotenv';
+import { Server } from 'http';
 
 let env_path: string = path.join(__dirname, '../../.env.development');
 
@@ -96,17 +97,17 @@ const handleError = (): void => {
 };
 
 // start applicatoin
-const startApp = (): void => {
+const startApp = (): Server => {
   try {
     // register core application level middleware
     registerCoreMiddleWare();
 
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       logger.info('Listening on 127.0.0.1:' + PORT);
     });
-
     // exit on uncaught exception
     handleError();
+    return server;
   } catch (err) {
     logger.error(
       `startup :: Error while booting the applicaiton ${JSON.stringify(
@@ -120,3 +121,4 @@ const startApp = (): void => {
 };
 
 export default startApp;
+export { app };

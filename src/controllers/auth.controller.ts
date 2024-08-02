@@ -54,7 +54,6 @@ const signin = async (req: CustomRequest, res: Response): Promise<Response> => {
         expiresIn: '1h',
       },
     );
-
     return res.status(200).json({ token });
   } catch (error) {
     // eslint-disable-next-line no-console
