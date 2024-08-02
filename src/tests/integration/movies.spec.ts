@@ -1,7 +1,10 @@
 import supertest from 'supertest';
 import startApp from '../../boot/setup';
-
-startApp();
+try {
+  startApp();
+} catch (error) {
+  console.log('App already started');
+}
 const request = supertest('http://localhost:8080');
 let token: string;
 beforeAll(async () => {

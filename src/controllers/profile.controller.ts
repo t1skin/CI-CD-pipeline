@@ -10,6 +10,7 @@ const editPassword = async (
   res: Response,
 ): Promise<Response> => {
   const { oldPassword, newPassword } = req.body;
+  logger.info(req.user.email);
 
   if (!oldPassword || !newPassword) {
     return res
@@ -22,7 +23,7 @@ const editPassword = async (
         .json({ message: 'New password cannot be equal to old password' });
     } else {
       pool.query(
-        'SELECT * FROM users WHERE email = $1 AND password = crypt($2, password);',
+        'SELECT * FROM users WHERE user_email = $1 AND password = crypt($2, password);',
         [req.user.email, oldPassword],
         (err: Error, rows: QueryResult) => {
           if (err) {
@@ -33,7 +34,7 @@ const editPassword = async (
           } else {
             if (rows.rows[0]) {
               pool.query(
-                "UPDATE users SET password = crypt($1, gen_salt('bf')) WHERE email = $2;",
+                "UPDATE users SET password = crypt($1, gen_salt('bf')) WHERE user_email = $2;",
                 [newPassword, req.user.email],
                 (err: Error, _rows: QueryResult) => {
                   void _rows;

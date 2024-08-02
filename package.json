@@ -54,6 +54,7 @@
     "@types/morgan": "^1.9.9",
     "@types/pg": "^8.11.6",
     "@types/supertest": "^6.0.2",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^7.13.0",
     "@typescript-eslint/parser": "^7.13.0",
     "babel-jest": "^29.7.0",
@@ -72,6 +73,7 @@
     "prettier": "^3.3.2",
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.4",
-    "typescript-eslint": "^7.13.1"
+    "typescript-eslint": "^7.13.1",
+    "uuid": "^10.0.0"
   }
 }

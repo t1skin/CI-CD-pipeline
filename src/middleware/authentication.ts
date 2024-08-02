@@ -24,7 +24,6 @@ const verifyToken = (
       token.split(' ')[1],
       process.env.JWT_SECRET_KEY as string,
     ) as any;
-
     req.user = decoded.user;
 
     console.log('TOKEN USER: ', req.user);
