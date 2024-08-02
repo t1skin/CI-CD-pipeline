@@ -1,6 +1,6 @@
-import { Document, Types } from 'mongoose';
+import { Types } from 'mongoose';
 
-export interface IMessage extends Document<Types.ObjectId> {
+export interface IMessage {
   name: string;
   user: Types.ObjectId;
   created_at?: Date;
