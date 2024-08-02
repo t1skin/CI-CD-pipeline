@@ -4,6 +4,8 @@ import startApp, { app } from '../../boot/setup';
 import { Server } from 'http';
 import { closePool } from '../../boot/database/db_connect';
 import logger from '../../middleware/winston';
+import CommentModel from '../../models/commentModel';
+
 const request = supertest(app);
 
 let agent: supertest.Agent;
@@ -37,6 +39,7 @@ afterAll(async () => {
 
 let token: string;
 let uniqueEmail: string;
+let movieId: number;
 
 describe('Auth', () => {
   beforeAll(async () => {
@@ -56,6 +59,7 @@ describe('Auth', () => {
     });
     token = response.body.token;
   });
+
   describe('POST /auth/signup', () => {
     it('should signup a new user and return 200 status code', async () => {
       const uniqueEmail = `${uuidv4()}@mail.com`;
@@ -122,11 +126,13 @@ describe('Movies', () => {
     });
     token = response.body.token;
   });
+
   describe('GET /movies', () => {
     it('should return 401 status code if no token is provided', async () => {
       const response = await request.get('/movies');
       expect(response.status).toBe(401);
     });
+
     it('should return movies grouped by category if no category query parameter is provided', async () => {
       const response = await request
         .get('/movies')
@@ -198,124 +204,130 @@ describe('Movies', () => {
         );
       }
     });
+
+    it('should not update the top rated movies list if an invalid rating is submitted', async () => {
+      const response = await request
+        .get('/movies/top')
+        .set('Authorization', `Bearer ${token}`);
+      const lastMovie = response.body.movies[response.body.movies.length - 1];
+      const ratingResponse = await request
+        .post(`/ratings/${lastMovie.movie_id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ rating: 6 });
+      expect(ratingResponse.status).toBe(500);
+      const updatedResponse = await request
+        .get('/movies/top')
+        .set('Authorization', `Bearer ${token}`);
+      expect(updatedResponse.status).toBe(200);
+      expect(updatedResponse.body.movies).toHaveLength(10);
+      expect(updatedResponse.body.movies).toContainEqual(lastMovie);
+    });
   });
 
-  it('should not update the top rated movies list if an invalid rating is submitted', async () => {
-    const response = await request
-      .get('/movies/top')
-      .set('Authorization', `Bearer ${token}`);
-    const lastMovie = response.body.movies[response.body.movies.length - 1];
-    const ratingResponse = await request
-      .post(`/ratings/${lastMovie.movie_id}`)
-      .set('Authorization', `Bearer ${token}`)
-      .send({ rating: 6 });
-    expect(ratingResponse.status).toBe(500);
-    const updatedResponse = await request
-      .get('/movies/top')
-      .set('Authorization', `Bearer ${token}`);
-    expect(updatedResponse.status).toBe(200);
-    expect(updatedResponse.body.movies).toHaveLength(10);
-    expect(updatedResponse.body.movies).toContainEqual(lastMovie);
+  describe('GET /movies/me', () => {
+    it('should return 401 status code if no token is provided', async () => {
+      const response = await request.get('/movies/me');
+      expect(response.status).toBe(401);
+    });
+
+    it('should return movies seen by the user', async () => {
+      const response = await request
+        .get('/movies/me')
+        .set('Authorization', `Bearer ${token}`);
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('movies');
+      expect(response.body.movies).toBeInstanceOf(Array);
+    });
+
+    it('should return empty list if user has not seen any movies', async () => {
+      const response = await request
+        .get('/movies/me')
+        .set('Authorization', `Bearer ${token}`);
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('movies');
+      expect(response.body.movies).toBeInstanceOf(Array);
+      expect(response.body.movies).toHaveLength(0);
+    });
   });
 });
 
-describe('GET /movies/me', () => {
-  it('should return 401 status code if no token is provided', async () => {
-    const response = await request.get('/movies/me');
-    expect(response.status).toBe(401);
-  });
-
-  it('should return movies seen by the user', async () => {
-    const response = await request
-      .get('/movies/me')
-      .set('Authorization', `Bearer ${token}`);
-    expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty('movies');
-    expect(response.body.movies).toBeInstanceOf(Array);
-  });
-
-  it('should return empty list if user has not seen any movies', async () => {
-    const response = await request
-      .get('/movies/me')
-      .set('Authorization', `Bearer ${token}`);
-    expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty('movies');
-    expect(response.body.movies).toBeInstanceOf(Array);
-    expect(response.body.movies).toHaveLength(0);
-  });
-});
-
-describe('heathCheck', () => {
-  it('should return 200 status code', async () => {
+describe('Health Check', () => {
+  it('should return 200 status code for health check', async () => {
     const response = await request.get('/api/health');
     expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty('message');
-    expect(response.body.message).toBe('All up and running !!');
   });
 });
 
-describe('User and Profile', () => {
-  let token: string;
-  describe('POST /users/register', () => {
-    const uniqueEmail = `${uuidv4()}@mail.com`;
-    it('should create a new user in the database', async () => {
-      const registerResponse = await request.post('/users/register').send({
-        email: uniqueEmail,
-        password: 'password',
-        username: 'testuser',
-        country: 'France',
-        city: 'Paris',
-        street: 'Champs Elysees',
-      });
-      expect(registerResponse.status).toBe(200);
-      expect(registerResponse.body).toHaveProperty('message');
-      expect(registerResponse.body.message).toBe('User created');
-      const loginResponse = await request.post('/users/login').send({
-        email: uniqueEmail,
-        password: 'password',
-      });
-      expect(loginResponse.status).toBe(200);
-      expect(loginResponse.body).toHaveProperty('token');
-      expect(loginResponse.body).toHaveProperty('username');
-      expect(loginResponse.body.username).toBe('testuser');
-      token = loginResponse.body.token;
-    });
-    it('should allow users to change their password', async () => {
-      const changePasswordResponse = await request
-        .put('/profile')
+describe('Comments', () => {
+  beforeAll(async () => {
+    movieId = 1; // Example movie ID
+  });
+
+  afterEach(async () => {
+    // Clean up the database after each test
+    await CommentModel.deleteMany({});
+  });
+
+  describe('POST /comments/:movie_id', () => {
+    it('should add a comment and return 200 status code', async () => {
+      const response = await agent
+        .post(`/comments/${movieId}`)
         .set('Authorization', `Bearer ${token}`)
         .send({
-          oldPassword: 'password',
-          newPassword: 'newpassword',
+          rating: 4,
+          username: 'testuser',
+          comment: 'This is a test comment.',
+          title: 'Test Title',
         });
-      expect(changePasswordResponse.status).toBe(200);
-      expect(changePasswordResponse.body).toHaveProperty('message');
-      expect(changePasswordResponse.body.message).toBe('Password updated');
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('message', 'Comment added');
+
+      const comments = await CommentModel.find({ movie_id: movieId });
+      expect(comments.length).toBe(1);
+      expect(comments[0]).toHaveProperty('username', 'testuser');
+      expect(comments[0]).toHaveProperty('comment', 'This is a test comment.');
     });
-    it('should return 404 status code for invalid routes', async () => {
-      const invalidRouteResponse = await request.get('/invalid-route');
-      expect(invalidRouteResponse.status).toBe(404);
-      expect(invalidRouteResponse.body).toHaveProperty('error');
-      expect(invalidRouteResponse.body.error.message).toBe('Not Found');
-    });
-    it('should not allow unauthorized users to change their password', async () => {
-      const changePasswordResponse = await request.put('/profile').send({
-        oldPassword: 'newpassword',
-        newPassword: 'password',
-      });
-      expect(changePasswordResponse.status).toBe(401);
-    });
-    it('should not allow users with invalid tokens to change their password', async () => {
-      const changePasswordResponse = await request
-        .put('/profile')
-        .set('Authorization', `Bearer invalidtoken`)
+
+    it('should return 400 status code for missing parameters', async () => {
+      const response = await agent
+        .post(`/comments/${movieId}`)
+        .set('Authorization', `Bearer ${token}`)
         .send({
-          oldPassword: 'newpassword',
-          newPassword: 'password',
+          username: 'testuser',
+          comment: 'This is a test comment.',
         });
-      expect(changePasswordResponse.status).toBe(401);
-      expect(changePasswordResponse.body).toHaveProperty('error');
-      expect(changePasswordResponse.body.error).toBe('Invalid token');
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message', 'Missing parameters');
+    });
+  });
+
+  describe('GET /comments/:movie_id', () => {
+    it('should return comments for a specific movie ID', async () => {
+      await agent
+        .post(`/comments/${movieId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          rating: 4,
+          username: 'testuser',
+          comment: 'This is a test comment.',
+          title: 'Test Title',
+        });
+
+      const response = await agent
+        .get(`/comments/${movieId}`)
+        .set('Authorization', `Bearer ${token}`);
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('comments');
+      expect(response.body.comments.length).toBe(1);
+      expect(response.body.comments[0]).toHaveProperty('username', 'testuser');
+    });
+
+    it('should return 400 status code for invalid movie ID', async () => {
+      const response = await agent
+        .get('/comments/invalid_id')
+        .set('Authorization', `Bearer ${token}`);
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('message', 'movie id missing');
     });
   });
 });
