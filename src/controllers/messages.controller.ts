@@ -23,7 +23,6 @@ const getMessageById = async (
     const message: IMessage = await messageModel.findById(messageId);
     return res.status(200).json(message);
   } catch (error) {
-    console.log('Error while getting message from DB', error.message);
     return res.status(500).json({ error: 'Error while getting message' });
   }
 };
@@ -53,7 +52,6 @@ const addMessage = async (
     await messageObj.save();
     return res.status(200).json(messageObj);
   } catch (error) {
-    console.log('Error while adding message to DB', error.message);
     return res.status(500).json({ error: 'Failed to add message' });
   }
 };
@@ -76,7 +74,6 @@ const editMessage = async (req: Request, res: Response): Promise<Response> => {
     );
     return res.status(200).json(message);
   } catch (error) {
-    console.log('Error while updating message', error.message);
     return res.status(500).json({ error: 'Failed to update message' });
   }
 };
@@ -93,7 +90,6 @@ const deleteMessage = async (
     await messageModel.findByIdAndDelete(messageId);
     return res.status(200).json({ message: 'Message deleted' });
   } catch (error) {
-    console.log('Error while deleting message', error.message);
     return res.status(500).json({ error: 'Failed to delete message' });
   }
 };
