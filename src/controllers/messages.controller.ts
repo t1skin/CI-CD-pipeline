@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import messageModel from '../models/messageModel';
 import { IMessage } from '../interfaces/message.interface';
 import { IRequestWithUser } from 'src/interfaces/requestWithUser.interface';
+import statusCodes from '../constants/statusCodes';
 
 const getMessages = async (_req: Request, res: Response): Promise<Response> => {
   const messages: IMessage[] = await messageModel.find({});
@@ -14,6 +15,10 @@ const getMessageById = async (
 ): Promise<Response> => {
   const { messageId } = req.params;
 
+  if (!messageId)
+    return res
+      .status(statusCodes.badRequest)
+      .json({ error: 'missing message id' });
   try {
     const message: IMessage = await messageModel.findById(messageId);
     return res.status(200).json(message);
@@ -30,11 +35,15 @@ const addMessage = async (
   const { message } = req.body;
 
   if (!message || !message.name) {
-    return res.status(400).json({ error: 'missing information' });
+    return res
+      .status(statusCodes.badRequest)
+      .json({ error: 'missing information' });
   }
 
   if (!req.user) {
-    return res.status(500).json({ error: 'You are not authenticated' });
+    return res
+      .status(statusCodes.unauthorized)
+      .json({ error: 'You are not authenticated' });
   }
 
   message.user = req.user.id;
@@ -89,10 +98,4 @@ const deleteMessage = async (
   }
 };
 
-export = {
-  getMessages,
-  getMessageById,
-  addMessage,
-  editMessage,
-  deleteMessage,
-};
+export { getMessages, getMessageById, addMessage, editMessage, deleteMessage };
