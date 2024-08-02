@@ -36,6 +36,7 @@ afterAll(async () => {
 });
 
 let token: string;
+let messageId: string;
 let uniqueEmail: string;
 
 describe('Auth', () => {
@@ -316,6 +317,98 @@ describe('User and Profile', () => {
       expect(changePasswordResponse.status).toBe(401);
       expect(changePasswordResponse.body).toHaveProperty('error');
       expect(changePasswordResponse.body.error).toBe('Invalid token');
+    });
+  });
+});
+
+describe('Messages', () => {
+  beforeAll(async () => {
+    const response = await request.post('/auth/login').send({
+      email: 'test@mail.com',
+      password: 'password',
+    });
+    token = response.body.token;
+  });
+
+  describe('POST /messages/add/message', () => {
+    it('should return 401 status code if no token is provided', async () => {
+      const response = await request.get('/movies');
+      expect(response.status).toBe(401);
+    });
+    it('should add a new message', async () => {
+      const response = await request
+        .post('/messages/add/message')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ message: { name: 'this is a test msg`' } });
+
+      messageId = response.body._id;
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('_id');
+      expect(response.body).toHaveProperty('name');
+      expect(response.body).toHaveProperty('user');
+    });
+  });
+
+  describe('GET /messages', () => {
+    it('should return 401 status code if no token is provided', async () => {
+      const response = await request.get('/movies');
+      expect(response.status).toBe(401);
+    });
+    it('should return all messages', async () => {
+      const response = await request
+        .get('/messages')
+        .set('Authorization', `Bearer ${token}`);
+      expect(response.status).toBe(200);
+      expect(response.body).toBeInstanceOf(Array);
+    });
+  });
+
+  describe('GET /messages/:messageId', () => {
+    it('should return 401 status code if no token is provided', async () => {
+      const response = await request.get('/messages/1');
+      expect(response.status).toBe(401);
+    });
+
+    it('should return message with specified id', async () => {
+      const response = await request
+        .get(`/messages/${messageId}`)
+        .set('Authorization', `Bearer ${token}`);
+      expect(response.status).toBe(200);
+      // expect(response.body.movies).toBeInstanceOf(Object);
+    });
+  });
+
+  describe('PUT /messages/edit/:messageId', () => {
+    it('should return 401 status code if no token is provided', async () => {
+      const response = await request.get('/movies');
+      expect(response.status).toBe(401);
+    });
+    it('should update message with specified id', async () => {
+      const response = await request
+        .put(`/messages/edit/${messageId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ name: 'new awesome name' });
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('_id');
+      expect(response.body).toHaveProperty('name');
+      expect(response.body).toHaveProperty('user');
+      expect(response.body.name).toBe('new awesome name');
+    });
+  });
+
+  describe('DELETE /messages/delete/:messageId', () => {
+    it('should return 401 status code if no token is provided', async () => {
+      const response = await request.get('/movies');
+      expect(response.status).toBe(401);
+    });
+    it('should delete message with specified id', async () => {
+      const response = await request
+        .delete(`/messages/delete/${messageId}`)
+        .set('Authorization', `Bearer ${token}`);
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toBe('Message deleted');
     });
   });
 });
