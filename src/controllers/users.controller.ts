@@ -22,9 +22,10 @@ const register = async (req: CustomRequest, res: Response): Promise<void> => {
   const client = await pool.connect();
 
   try {
-    const result = await client.query('SELECT * FROM users WHERE email = $1;', [
-      email,
-    ]);
+    const result = await client.query(
+      'SELECT * FROM users WHERE user_email = $1;',
+      [email],
+    );
     if (result.rowCount) {
       res
         .status(statusCodes.userAlreadyExists)
@@ -34,7 +35,7 @@ const register = async (req: CustomRequest, res: Response): Promise<void> => {
 
     await client.query('BEGIN');
     const addedUser = await client.query(
-      `INSERT INTO users(email, username, password, creation_date)
+      `INSERT INTO users(user_email, username, password, creation_date)
        VALUES ($1, $2, crypt($3, gen_salt('bf')), $4);`,
       [email, username, password, req.body.creation_date],
     );
@@ -42,7 +43,7 @@ const register = async (req: CustomRequest, res: Response): Promise<void> => {
     logger.info('USER ADDED', addedUser.rowCount);
 
     const address = await client.query(
-      `INSERT INTO addresses(email, country, street, city) VALUES ($1, $2, $3, $4);`,
+      `INSERT INTO addresses(user_email, country, street, city) VALUES ($1, $2, $3, $4);`,
       [email, country, street, city],
     );
     logger.info('ADDRESS ADDED', address.rowCount);
@@ -69,7 +70,7 @@ const login = async (req: CustomRequest, res: Response): Promise<void> => {
   }
 
   pool.query(
-    'SELECT * FROM users WHERE email = $1 AND password = crypt($2, password);',
+    'SELECT * FROM users WHERE user_email = $1 AND password = crypt($2, password);',
     [email, password],
     (err, result) => {
       if (err) {
@@ -82,11 +83,11 @@ const login = async (req: CustomRequest, res: Response): Promise<void> => {
 
       if (result.rows[0]) {
         req.session.user = {
-          email: result.rows[0].email,
+          email: result.rows[0].user_email,
         };
 
         const token = jwt.sign(
-          { user: { email: result.rows[0].email } },
+          { user: { email: result.rows[0].user_email } },
           process.env.JWT_SECRET_KEY as string,
           {
             expiresIn: '1h',
