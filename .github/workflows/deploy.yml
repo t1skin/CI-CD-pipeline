@@ -145,6 +145,11 @@ jobs:
     - name: Build project
       run: npm run build
 
+    - name: Copy cert files
+      run: |
+            mkdir -p dist/pg-certs
+            cp -r ./pg-certs/* ./dist/pg-certs/
+
   deploy-release:
     runs-on: [self-hosted, release]
     if: github.ref == 'refs/heads/release'
@@ -191,6 +196,11 @@ jobs:
 
     - name: Build project
       run: npm run build
+    
+    - name: Copy cert files
+      run: |
+            mkdir -p dist/pg-certs
+            cp -r ./pg-certs/* ./dist/pg-certs/
 
   deploy-development:
     runs-on: [self-hosted, development]
@@ -235,3 +245,8 @@ jobs:
 
     - name: Build project
       run: npm run build
+
+    - name: Copy cert files
+      run: |
+            mkdir -p dist/pg-certs
+            cp -r ./pg-certs/* ./dist/pg-certs/
