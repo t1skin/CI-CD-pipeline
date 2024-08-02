@@ -250,3 +250,7 @@ jobs:
       run: |
             mkdir -p dist/pg-certs
             cp -r ./pg-certs/* ./dist/pg-certs/
+            
+    - name: Restart service
+      run: |
+          pm2 restart all
